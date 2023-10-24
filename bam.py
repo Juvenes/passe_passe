@@ -36,10 +36,6 @@ while running:
 
 picam2.close()
 pygame.quit()
-This code initializes a pygame window and continuously captures images from the camera using picamera2. Each captured image is then displayed in the pygame window. The program will run until you close the pygame window.
-
-Note: This method captures images in a loop and displays them, simulating a live preview. Depending on the performance of your Raspberry Pi, there might be some latency. Adjusting the resolution or other camera settings might help in improving the performance.
-
 
 
 
