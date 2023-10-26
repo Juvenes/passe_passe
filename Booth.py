@@ -183,6 +183,7 @@ class PhotoScreen(Screen):
         self.screen.blit(image, (x, 0))
         # Display countdown after waiting for 2 seconds
         elapsed_time = time.time() - self.start_time if self.start_time else 0
+        print(f"Elapsed Time: {elapsed_time}")  # Debug print
         if 2 <= elapsed_time < 3:
             countdown_text = self.font_large.render("3", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
@@ -199,11 +200,14 @@ class PhotoScreen(Screen):
             self.picam2.stop()
             pygame.display.flip()
             return PhotoPreviewScreen(self.screen,"captured_photo.jpg")
+                 
+        print(f"Elapsed Time: {elapsed_time}")  
 
         pygame.display.flip()
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.start_time = time.time()
+            #print(f"Elapsed Time: {self.start_time}")  # Debug print
         return self
 
 pygame.init()
