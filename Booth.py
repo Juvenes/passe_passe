@@ -115,6 +115,7 @@ class ChoiceDetailScreen(Screen):
 class PhotoPreviewScreen(Screen):
     def __init__(self, screen, photo_path):
         super().__init__(screen)
+        print("Mashalla")
         self.photo = pygame.image.load(photo_path)
         self.font = pygame.font.SysFont(None, 48)
         
@@ -188,8 +189,7 @@ class PhotoScreen(Screen):
         # Display the live preview
         self.screen.blit(image, (x, 0))
         # Display countdown after waiting for 2 seconds
-        elapsed_time = time.time() - self.start_time if self.start_time else 0
-        print(f"Elapsed Time: {elapsed_time}")  # Debug print
+        elapsed_time = time.time() - self.start_time if self.start_time else 0 
         if 2 <= elapsed_time < 3:
             countdown_text = self.font_large.render("3", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
@@ -202,12 +202,11 @@ class PhotoScreen(Screen):
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
             self.screen.fill((255, 255, 255))
-            self.picam2.capture_file("captured_photo.jpg", format='jpeg')
+            pygame.image.save(image, 'output.png')
             self.picam2.stop()
             pygame.display.flip()
-            return PhotoPreviewScreen(self.screen,"captured_photo.jpg")
+            return PhotoPreviewScreen(self.screen,"output.png")
                  
-        print(f"Elapsed Time: {elapsed_time}")  
 
         pygame.display.flip()
     def handle_event(self, event):
