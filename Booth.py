@@ -115,16 +115,14 @@ class ChoiceDetailScreen(Screen):
 class PhotoPreviewScreen(Screen):
     def __init__(self, screen, photo_path):
         super().__init__(screen)
-        print("Mashalla")
         self.photo = pygame.image.load(photo_path)
         self.font = pygame.font.SysFont(None, 48)
-        
+        self.screen.fill((0, 0, 0))
         # Define the buttons
         self.retry_button = pygame.Rect(50, screen_height/4, 150, 50)
         self.keep_button = pygame.Rect(50, screen_height/2, 150, 50)
 
     def draw(self):
-        self.screen.fill((0, 0, 0))
         # Center the photo on the screen
         x = (screen_width - self.photo.get_width()) // 2
         y = (screen_height - self.photo.get_height()) // 2
@@ -202,9 +200,10 @@ class PhotoScreen(Screen):
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
             self.screen.fill((255, 255, 255))
+            pygame.display.flip()
             pygame.image.save(image, 'output.png')
             self.picam2.stop()
-            pygame.display.flip()
+
             return PhotoPreviewScreen(self.screen,"output.png")
                  
 
