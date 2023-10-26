@@ -163,7 +163,7 @@ class PhotoScreen(Screen):
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.stream = io.BytesIO()
         self.capture_config = self.picam2.create_still_configuration()
-        self.picam2.capture_file(self.stream, format='jpeg')
+        self.picam2.start(show_preview=True)
         self.stream.seek(0)
         self.start_time = None
         
