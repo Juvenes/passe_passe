@@ -202,6 +202,7 @@ class PhotoScreen(Screen):
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
             pygame.image.save(image, 'output.png')
+            stream.close()
             self.picam2.stop()
 
             return PhotoPreviewScreen(self.screen,"output.png")
