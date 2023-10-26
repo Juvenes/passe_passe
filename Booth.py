@@ -154,15 +154,19 @@ class PhotoPreviewScreen(Screen):
         return self
 
 
-
 class PhotoScreen(Screen):
     def __init__(self, screen):
         super().__init__(screen)
         self.font_large = pygame.font.SysFont(None, 200)
+        self.font_medium = pygame.font.SysFont(None, 50)
         self.picam2 = Picamera2()
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.picam2.start()
         self.start_time = None
+        
+        # Define the "Ready" button properties
+        self.ready_button_text = self.font_medium.render("Ready", True, (255, 255, 255))
+        self.ready_button_rect = pygame.Rect(screen_width/2 - 100, screen_height - 100, 200, 50)
 
     def draw(self):
         self.screen.fill((0, 0, 0))
@@ -177,7 +181,8 @@ class PhotoScreen(Screen):
         image_width, image_height = image.get_size()
         x = (screen_width - image_width) // 2
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
-    
+        pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
+        self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
     # Display the live preview
         # Display the live preview
         self.screen.blit(image, (x, 0))
@@ -206,8 +211,8 @@ class PhotoScreen(Screen):
         pygame.display.flip()
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            self.start_time = time.time()
-            #print(f"Elapsed Time: {self.start_time}")  # Debug print
+            if self.ready_button_rect.collidepoint(event.pos):
+                self.start_time = time.time()
         return self
 
 pygame.init()
