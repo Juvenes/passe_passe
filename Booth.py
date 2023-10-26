@@ -199,6 +199,7 @@ class PhotoScreen(Screen):
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
             self.picam2.stop()
+            stream.close()
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
             pygame.image.save(image, 'output.png')
