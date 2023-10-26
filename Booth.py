@@ -161,9 +161,9 @@ class PhotoScreen(Screen):
         self.font_medium = pygame.font.SysFont(None, 50)
         self.picam2 = Picamera2()
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
-        self.stream = io.BytesIO()
+
         self.capture_config = self.picam2.create_still_configuration()
-        self.picam2.start(show_preview=True)
+        self.picam2.start()
         self.stream.seek(0)
         self.start_time = None
         
@@ -175,6 +175,7 @@ class PhotoScreen(Screen):
         self.screen.fill((0, 0, 0))
         # Capture the image to a BytesIO self.stream for live preview
         # Convert the self.stream to a Pygame image
+        self.stream = io.BytesIO()
         image = Image.open(self.stream)
         image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
         self.picam2.capture_file(self.stream, format='jpeg')
@@ -200,8 +201,8 @@ class PhotoScreen(Screen):
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
             self.screen.fill((255, 255, 255))
-            #pygame.image.save(image, 'output.png')
-            #self.picam2.stop()
+            pygame.image.save(image, 'output.png')
+            self.picam2.stop()
 
             pygame.display.flip()
 
