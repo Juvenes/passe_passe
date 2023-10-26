@@ -158,73 +158,7 @@ class PhotoPreviewScreen(Screen):
 class PhotoScreen(Screen):
     def __init__(self, screen):
         super().__init__(screen)
-        self.font_large = pygame.font.SysFont(None, 200)
-        self.font_medium = pygame.font.SysFont(None, 50)
-        
-        # Define the "Ready" button properties
-        self.ready_button_text = self.font_medium.render("Ready", True, (255, 255, 255))
-        self.ready_button_rect = pygame.Rect(screen_width/2 - 100, screen_height - 100, 200, 50)
-        self.start_time = None
-
-    def draw(self):
-        self.screen.fill((0, 0, 0))
-        
-        # Use the with statement for Picamera2
-        with Picamera2() as picam2:
-            picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
-            picam2.start()
-            
-            # Capture the image to a BytesIO stream for live preview
-            stream = io.BytesIO()
-            picam2.capture_file(stream, format='jpeg')
-            stream.seek(0)
-
-            # Convert the stream to a Pygame image
-            image = Image.open(stream)
-            image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
-            image_width, image_height = image.get_size()
-            x = (screen_width - image_width) // 2
-            pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
-            self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
-            
-            # Display the live preview
-            self.screen.blit(image, (x, 0))
-                # Display the live preview
-        # Display the live preview
-            self.screen.blit(image, (x, 0))
-            # Display countdown after waiting for 2 seconds
-            elapsed_time = time.time() - self.start_time if self.start_time else 0 
-            if 2 <= elapsed_time < 3:
-                countdown_text = self.font_large.render("3", True, (255, 0, 0))
-                self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
-            elif 3 <= elapsed_time < 4:
-                countdown_text = self.font_large.render("2", True, (255, 0, 0))
-                self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
-            elif 4 <= elapsed_time < 5:
-                countdown_text = self.font_large.render("1", True, (255, 0, 0))
-                self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
-            elif elapsed_time >= 5:
-                stream.close()
-                #self.screen.fill((255, 255, 255))
-                #pygame.display.flip()
-                pygame.image.save(image, 'output.png')
-                return StartScreen(self.screen)
-            # ... [rest of your code]
-
-            # No need to stop or close the camera, the with statement will handle it
-            stream.close()
-
-        pygame.display.flip()
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.ready_button_rect.collidepoint(event.pos):
-                self.start_time = time.time()
-        return self
-
-class PhotoScreen(Screen):
-    def __init__(self, screen):
-        super().__init__(screen)
+        self.finished = False
         self.font_large = pygame.font.SysFont(None, 200)
         self.font_medium = pygame.font.SysFont(None, 50)
         self.picam2 = Picamera2()
@@ -267,19 +201,18 @@ class PhotoScreen(Screen):
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
             self.picam2.stop()
-            self.picam2.close()
             stream.close()
-            #self.screen.fill((255, 255, 255))
-            #pygame.display.flip()
-            #pygame.image.save(image, 'output.png')
-            return StartScreen(self.screen)
-  
-        print(elapsed_time)
+            self.screen.fill((255, 255, 255))
+            pygame.display.flip()
+            pygame.image.save(image, 'output.png')
+            self.finished = True
         pygame.display.flip()
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.ready_button_rect.collidepoint(event.pos):
                 self.start_time = time.time()
+            if(self.finished):         
+                return StartScreen(self.screen)
         return self
 
 pygame.init()
