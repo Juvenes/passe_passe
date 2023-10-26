@@ -123,6 +123,7 @@ class PhotoPreviewScreen(Screen):
         self.keep_button = pygame.Rect(50, screen_height/2, 150, 50)
 
     def draw(self):
+        self.screen.fill((0, 0, 0))
         # Center the photo on the screen
         x = (screen_width - self.photo.get_width()) // 2
         y = (screen_height - self.photo.get_height()) // 2
