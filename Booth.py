@@ -198,11 +198,9 @@ class PhotoScreen(Screen):
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
+            self.picam2.stop()
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
-            self.picam2.stop()
-            pygame.display.flip()
-            self.screen.fill((0, 0, 0))
             pygame.image.save(image, 'output.png')
             return PhotoPreviewScreen(self.screen,"output.png")
                  
