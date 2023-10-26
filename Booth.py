@@ -114,6 +114,7 @@ class PhotoScreen(Screen):
         self.start_time = None
 
     def draw(self):
+        self.screen.fill((0, 0, 0))
         # Capture the image to a BytesIO stream for live preview
         stream = io.BytesIO()
         self.picam2.capture_file(stream, format='jpeg')
@@ -122,27 +123,38 @@ class PhotoScreen(Screen):
         # Convert the stream to a Pygame image
         image = Image.open(stream)
         image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
-        
+        image_width, image_height = image.get_size()
+        x = (screen_width - image_width) // 2
+    
+    # Display the live preview
         # Display the live preview
-        self.screen.blit(image, (0, 0))
-
+        self.screen.blit(image, (x, 0))
         # Display countdown after waiting for 2 seconds
         elapsed_time = time.time() - self.start_time if self.start_time else 0
         if 2 <= elapsed_time < 3:
+            self.screen.fill((0, 0, 0))
             countdown_text = self.font_large.render("3", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
+            pygame.display.flip()
+            pygame.time.wait(1000)
         elif 3 <= elapsed_time < 4:
+            self.screen.fill((0, 0, 0))
             countdown_text = self.font_large.render("2", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
+            pygame.display.flip()
+            pygame.time.wait(1000)
         elif 4 <= elapsed_time < 5:
+            self.screen.fill((0, 0, 0))
             countdown_text = self.font_large.render("1", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
+            pygame.display.flip()
+            pygame.time.wait(1000)
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
             self.picam2.capture_file("captured_photo.jpg", format='jpeg')
             self.screen.fill((255, 255, 255))
-
-        pygame.display.flip()
+            pygame.display.flip()
+            pygame.time.wait(1000)  
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
