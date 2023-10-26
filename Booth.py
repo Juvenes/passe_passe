@@ -200,8 +200,8 @@ class PhotoScreen(Screen):
             # Capture the photo and flash the screen in white
             self.picam2.stop()
             stream.close()
-            self.screen.fill((255, 255, 255))
-            pygame.display.flip()
+            #self.screen.fill((255, 255, 255))
+            #pygame.display.flip()
             #pygame.image.save(image, 'output.png')
             return StartScreen(self.screen)
                  
