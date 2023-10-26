@@ -7,7 +7,7 @@ from libcamera import controls
 
 
 
-picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
+
 
 class Screen:
     def __init__(self, screen):
@@ -160,6 +160,7 @@ class PhotoScreen(Screen):
         super().__init__(screen)
         self.font_large = pygame.font.SysFont(None, 200)
         self.picam2 = Picamera2()
+        self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.picam2.start()
         self.start_time = None
 
@@ -197,7 +198,7 @@ class PhotoScreen(Screen):
             self.picam2.capture_file("captured_photo.jpg", format='jpeg')
             self.picam2.stop()
             pygame.display.flip()
-            return PhotoPreviewScreen(self.screen, photo_path)
+            return PhotoPreviewScreen(self.screen,"captured_photo.jpg")
 
         pygame.display.flip()
     def handle_event(self, event):
