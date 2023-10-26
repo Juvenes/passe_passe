@@ -203,7 +203,7 @@ class PhotoScreen(Screen):
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
             #pygame.image.save(image, 'output.png')
-            return ChoiceDetailScreen(self.screen)
+            return StartScreen(self.screen)
                  
         print(elapsed_time)
         pygame.display.flip()
