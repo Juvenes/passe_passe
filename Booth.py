@@ -132,19 +132,16 @@ class PhotoScreen(Screen):
         # Display countdown after waiting for 2 seconds
         elapsed_time = time.time() - self.start_time if self.start_time else 0
         if 2 <= elapsed_time < 3:
-            self.screen.fill((0, 0, 0))
             countdown_text = self.font_large.render("3", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
             pygame.display.flip()
             pygame.time.wait(1000)
         elif 3 <= elapsed_time < 4:
-            self.screen.fill((0, 0, 0))
             countdown_text = self.font_large.render("2", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
             pygame.display.flip()
             pygame.time.wait(1000)
         elif 4 <= elapsed_time < 5:
-            self.screen.fill((0, 0, 0))
             countdown_text = self.font_large.render("1", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
             pygame.display.flip()
