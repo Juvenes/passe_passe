@@ -99,7 +99,7 @@ class ChoiceDetailScreen(Screen):
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            for choice, rect in self.button_rects.items():
+            for choice, rect in self.go_button_rect.items():
                 if rect.collidepoint(event.pos):
                     if choice == "Photo":
                         return PhotoScreen(self.screen)  # Transition to the PhotoScreen when "Photo" is selected
