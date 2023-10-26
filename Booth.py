@@ -99,12 +99,13 @@ class ChoiceDetailScreen(Screen):
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            distance = ((event.pos[0] - self.go_button_rect.centerx)**2 + (event.pos[1] - self.go_button_rect.centery)**2)**0.5
-            if distance <= self.circle_radius:
-                # Handle the action for the chosen option (e.g., start the photo capture)
-                print(f"Starting {self.choice} action!")
+            for choice, rect in self.button_rects.items():
+                if rect.collidepoint(event.pos):
+                    if choice == "Photo":
+                        return PhotoScreen(self.screen)  # Transition to the PhotoScreen when "Photo" is selected
+                    # Add similar conditions for other choices if needed
+                    print(f"You chose {choice}!")
         return self
-
 class PhotoScreen(Screen):
     def __init__(self, screen):
         super().__init__(screen)
