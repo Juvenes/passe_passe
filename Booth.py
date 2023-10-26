@@ -22,6 +22,7 @@ class Screen:
 class StartScreen(Screen):
     def __init__(self, screen):
         super().__init__(screen)
+        print("HAHAHHAHAHHA")
         self.font = pygame.font.SysFont(None, 56)
         self.text = self.font.render("Take Image", True, (255, 255, 255))
         self.button_rect = self.text.get_rect(center=(screen_width/2, screen_height/2))
@@ -204,7 +205,7 @@ class PhotoScreen(Screen):
             #pygame.display.flip()
             #pygame.image.save(image, 'output.png')
             return StartScreen(self.screen)
-                 
+  
         print(elapsed_time)
         pygame.display.flip()
     def handle_event(self, event):
