@@ -202,8 +202,8 @@ class PhotoScreen(Screen):
             stream.close()
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
-            pygame.image.save(image, 'output.png')
-            return PhotoPreviewScreen(self.screen,"output.png")
+            #pygame.image.save(image, 'output.png')
+            return ChoiceDetailScreen(self.screen)
                  
         print(elapsed_time)
         pygame.display.flip()
