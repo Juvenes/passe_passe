@@ -200,13 +200,13 @@ class PhotoScreen(Screen):
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
-            #self.picam2.stop()
-            #stream.close()
+            self.picam2.stop()
+            stream.close()
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
             pygame.image.save(image, 'output.png')
-            self.finished = True
-        pygame.display.flip()
+            self.finished = True  
+        pygame.display.flip()  
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.ready_button_rect.collidepoint(event.pos):
@@ -224,6 +224,9 @@ current_screen = StartScreen(screen)
 running = True
 while running:
     current_screen.draw()
+    if current_screen is PhotoScreen:
+        if (current_screen.finished):
+            current_screen = current_screen.handle_event(event)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
