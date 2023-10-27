@@ -127,7 +127,7 @@ class PhotoPreviewScreen(Screen):
         # Center the photo on the screen
         x = (screen_width - self.photo.get_width()) // 2
         y = (screen_height - self.photo.get_height()) // 2
-        self.screen.blit(self.photo, (x, y))
+        self.screen.blit(self.photo, (x+100, y))
         
         # Draw the buttons
         pygame.draw.rect(self.screen, (255, 0, 0), self.retry_button)
@@ -165,6 +165,7 @@ class PhotoScreen(Screen):
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.picam2.start()
         self.start_time = None
+        self.final = None
         
         # Define the "Ready" button properties
         self.ready_button_text = self.font_medium.render("Ready", True, (255, 255, 255))
@@ -194,7 +195,7 @@ class PhotoScreen(Screen):
         elif 4 <= elapsed_time < 5:
             countdown_text = self.font_large.render("1", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
-            pygame.image.save(image, 'output.png') 
+            self.final = image
         pygame.display.flip()  
     def update(self):
         elapsed_time = time.time() - self.start_time if self.start_time else 0 
@@ -204,6 +205,7 @@ class PhotoScreen(Screen):
             self.picam2.close()
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
+            pygame.image.save(self.final, 'output.png') 
             return PhotoPreviewScreen(self.screen,'output.png')
         return self
     
@@ -228,5 +230,7 @@ while running:
             running = False
         else:
             current_screen = current_screen.handle_event(event)
+    if isinstance(current_screen, PhotoScreen):
+        current_screen = current_screen.update()
 
 pygame.quit()
