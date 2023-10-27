@@ -176,10 +176,7 @@ class PhotoScreen(Screen):
 
     def draw(self):
         self.screen.fill((0, 0, 0))
-        # Capture the image to a BytesIO stream for live preview
-        if not self.start_time:
-            pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
-            self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
+        # Capture the image to a BytesIO stream for live previe
         stream = io.BytesIO()
         self.picam2.capture_file(stream, format='jpeg')
         stream.seek(0)
@@ -189,9 +186,10 @@ class PhotoScreen(Screen):
         self.final = image
         image_width, image_height = image.get_size()
         x = (screen_width - image_width) // 2
-        pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
-        self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
         self.screen.blit(image, (x, 0))
+        if not self.start_time:
+            pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
+            self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
         elapsed_time = time.time() - self.start_time if self.start_time else 0 
         if 2 <= elapsed_time < 3:
             countdown_text = self.font_large.render("3", True, (255, 0, 0))
