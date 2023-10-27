@@ -187,9 +187,6 @@ class PhotoScreen(Screen):
         pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
         self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
         self.screen.blit(self.image, (x, 0))
-        pygame.display.flip()  
-    def update(self):
-        # Display countdown after waiting for 2 seconds
         elapsed_time = time.time() - self.start_time if self.start_time else 0 
         if 2 <= elapsed_time < 3:
             countdown_text = self.font_large.render("3", True, (255, 0, 0))
@@ -200,20 +197,25 @@ class PhotoScreen(Screen):
         elif 4 <= elapsed_time < 5:
             countdown_text = self.font_large.render("1", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
-        elif elapsed_time >= 5:
+        pygame.display.flip()  
+    def update(self):
+        elapsed_time = time.time() - self.start_time if self.start_time else 0 
+        if elapsed_time >= 5:
             # Capture the photo and flash the screen in white
             self.picam2.stop()
+            self.picam2.close()
             self.stream.close()
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
             pygame.image.save(self.image, 'output.png') 
             return PhotoPreviewScreen(self.screen,'output.png')
-        pygame.display.flip()  
         return self
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.ready_button_rect.collidepoint(event.pos):
+                pygame.draw.rect(self.screen, (0, 0, 0), self.ready_button_rect)
+                self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
                 self.start_time = time.time()
         return self.update()
 
@@ -225,11 +227,7 @@ current_screen = StartScreen(screen)
 running = True
 while running:
     current_screen.draw()
-    if current_screen is PhotoScreen:
-        if (current_screen.finished):
-            current_screen = current_screen.handle_event(event)
     for event in pygame.event.get():
-        print("EVENT")
         if event.type == pygame.QUIT:
             running = False
         else:
