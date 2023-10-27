@@ -163,7 +163,7 @@ class PhotoScreen(Screen):
         self.font_large = pygame.font.SysFont(None, 200)
         self.font_medium = pygame.font.SysFont(None, 50)
         self.picam2 = Picamera2()
-        self.config = self.picam2.create_video_configuration(main={"size": (2304, 1296)},transform=Transform(hflip=True))
+        self.config = self.picam2.create_video_configuration(main={"size": (1280,720)},transform=Transform(hflip=True))
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.picam2.configure(self.config)
         self.picam2.start()
@@ -177,13 +177,16 @@ class PhotoScreen(Screen):
     def draw(self):
         self.screen.fill((0, 0, 0))
         # Capture the image to a BytesIO stream for live preview
+        if not self.start_time:
+            pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
+            self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
         stream = io.BytesIO()
         self.picam2.capture_file(stream, format='jpeg')
         stream.seek(0)
         # Convert the stream to a Pygame image
         image = Image.open(stream)
         image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
-        image = pygame.transform.scale(image, (1280, 720))
+        image = pygame.transform.scale(image, (980, 680))
         self.final = image
         image_width, image_height = image.get_size()
         x = (screen_width - image_width) // 2
