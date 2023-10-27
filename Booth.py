@@ -3,12 +3,13 @@ import io
 from picamera2 import Picamera2
 from PIL import Image
 import time
-from libcamera import controls
+import os
+from libcamera import controls ,Transform
 
 
 
 
-
+os.system("v4l2-ctl --set-ctrl wide_dynamic_range=1 -d /dev/v4l-subdev0")
 class Screen:
     def __init__(self, screen):
         self.screen = screen
@@ -162,7 +163,9 @@ class PhotoScreen(Screen):
         self.font_large = pygame.font.SysFont(None, 200)
         self.font_medium = pygame.font.SysFont(None, 50)
         self.picam2 = Picamera2()
+        self.config = self.picam2.create_video_configuration(main={"size": (2304, 1296)},transform=Transform(hflip=True))
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
+        self.picam2.configure(self.config)
         self.picam2.start()
         self.start_time = None
         self.final = None
