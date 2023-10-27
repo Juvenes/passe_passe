@@ -178,7 +178,7 @@ class PhotoScreen(Screen):
         stream.seek(0)
         # Convert the stream to a Pygame image
         image = Image.open(stream)
-        image = pygame.image.fromstring(self.tobytes(), image.size, image.mode)
+        image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
         image_width, image_height = image.get_size()
         x = (screen_width - image_width) // 2
         pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
