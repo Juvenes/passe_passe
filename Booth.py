@@ -164,8 +164,6 @@ class PhotoScreen(Screen):
         self.picam2 = Picamera2()
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.picam2.start()
-        self.stream = io.BytesIO()
-        self.image =None
         self.start_time = None
         
         # Define the "Ready" button properties
@@ -175,18 +173,17 @@ class PhotoScreen(Screen):
     def draw(self):
         self.screen.fill((0, 0, 0))
         # Capture the image to a BytesIO stream for live preview
-
-        self.picam2.capture_file(self.stream, format='jpeg')
-        self.stream.seek(0)
-
+        stream = io.BytesIO()
+        self.picam2.capture_file(stream, format='jpeg')
+        stream.seek(0)
         # Convert the stream to a Pygame image
-        self.image = Image.open(self.stream)
-        self.image = pygame.image.fromstring(self.image.tobytes(), self.image.size, self.image.mode)
-        image_width, image_height = self.image.get_size()
+        image = Image.open(stream)
+        image = pygame.image.fromstring(self.tobytes(), image.size, image.mode)
+        image_width, image_height = image.get_size()
         x = (screen_width - image_width) // 2
         pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
         self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
-        self.screen.blit(self.image, (x, 0))
+        self.screen.blit(image, (x, 0))
         elapsed_time = time.time() - self.start_time if self.start_time else 0 
         if 2 <= elapsed_time < 3:
             countdown_text = self.font_large.render("3", True, (255, 0, 0))
@@ -197,6 +194,7 @@ class PhotoScreen(Screen):
         elif 4 <= elapsed_time < 5:
             countdown_text = self.font_large.render("1", True, (255, 0, 0))
             self.screen.blit(countdown_text, (screen_width/2 - countdown_text.get_width()/2, screen_height/2 - countdown_text.get_height()/2))
+            pygame.image.save(image, 'output.png') 
         pygame.display.flip()  
     def update(self):
         elapsed_time = time.time() - self.start_time if self.start_time else 0 
@@ -204,10 +202,8 @@ class PhotoScreen(Screen):
             # Capture the photo and flash the screen in white
             self.picam2.stop()
             self.picam2.close()
-            self.stream.close()
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
-            pygame.image.save(self.image, 'output.png') 
             return PhotoPreviewScreen(self.screen,'output.png')
         return self
     
