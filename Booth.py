@@ -164,6 +164,8 @@ class PhotoScreen(Screen):
         self.picam2 = Picamera2()
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.picam2.start()
+        self.stream = io.BytesIO()
+        self.image =None
         self.start_time = None
         
         # Define the "Ready" button properties
@@ -173,20 +175,20 @@ class PhotoScreen(Screen):
     def draw(self):
         self.screen.fill((0, 0, 0))
         # Capture the image to a BytesIO stream for live preview
-        stream = io.BytesIO()
-        self.picam2.capture_file(stream, format='jpeg')
-        stream.seek(0)
+
+        self.picam2.capture_file(self.stream, format='jpeg')
+        self.stream.seek(0)
 
         # Convert the stream to a Pygame image
-        image = Image.open(stream)
-        image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
-        image_width, image_height = image.get_size()
+        self.image = Image.open(self.stream)
+        self.image = pygame.image.fromstring(self.image.tobytes(), self.image.size, self.image.mode)
+        image_width, image_height = self.image.get_size()
         x = (screen_width - image_width) // 2
         pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
         self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
-    # Display the live preview
-        # Display the live preview
-        self.screen.blit(image, (x, 0))
+        self.screen.blit(self.image, (x, 0))
+        pygame.display.flip()  
+    def update(self):
         # Display countdown after waiting for 2 seconds
         elapsed_time = time.time() - self.start_time if self.start_time else 0 
         if 2 <= elapsed_time < 3:
@@ -201,20 +203,19 @@ class PhotoScreen(Screen):
         elif elapsed_time >= 5:
             # Capture the photo and flash the screen in white
             self.picam2.stop()
-            stream.close()
+            self.stream.close()
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
-            pygame.image.save(image, 'output.png')
-            self.finished = True  
+            pygame.image.save(self.image, 'output.png') 
+            return PhotoPreviewScreen(self.screen,'output.png')
         pygame.display.flip()  
+        return self
+    
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.ready_button_rect.collidepoint(event.pos):
                 self.start_time = time.time()
-            if(self.finished): 
-                print("Satertcredd")        
-                return StartScreen(self.screen)
-        return self
+        return self.update()
 
 pygame.init()
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
@@ -228,6 +229,7 @@ while running:
         if (current_screen.finished):
             current_screen = current_screen.handle_event(event)
     for event in pygame.event.get():
+        print("EVENT")
         if event.type == pygame.QUIT:
             running = False
         else:
