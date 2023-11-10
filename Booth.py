@@ -9,28 +9,31 @@ import cv2
 from libcamera import controls ,Transform
 
 def process_image(main_image, logo):
+    # Load the main image and ensure it is in RGBA mode
+    main_image = main_image.convert("RGBA")
+    # Load the logo image and ensure it is in RGBA mode
+    logo = logo.convert("RGBA")
+    
+    # Assuming the logo size is already 50x50 as needed
     image_width, image_height = main_image.size
     logo_width, logo_height = logo.size
     x = image_width - logo_width
     y = image_height - logo_height
 
-    # Paste the logo onto the main image
+    # Paste the logo onto the main image, using logo as the mask for transparency
     main_image.paste(logo, (x, y), logo)
-# Enhance color
-    color_enhancer = ImageEnhance.Color(main_image)
-    enhanced_color_image = color_enhancer.enhance(1.5)  # Adjust the factor as needed
 
-    # Enhance sharpness
-    sharpness_enhancer = ImageEnhance.Sharpness(enhanced_color_image)
-    enhanced_sharpness_image = sharpness_enhancer.enhance(2.0)  # Adjust the factor as needed
-
-    # Save the enhanced image
-    # Convert the Pillow image to a format Pygame can use
+    # Enhance sharpness of the main image
+    sharpness_enhancer = ImageEnhance.Sharpness(main_image)
+    enhanced_sharpness_image = sharpness_enhancer.enhance(1.7)  # Adjust the factor as needed
+    
+    # Since you wanted to use this image in Pygame, you need to convert the data
     mode = enhanced_sharpness_image.mode
     size = enhanced_sharpness_image.size
     data = enhanced_sharpness_image.tobytes()
-    enhanced_sharpness_image.save("final.png")
+
     # Initialize Pygame and create a surface with the enhanced image
+
     pygame_surface = pygame.image.fromstring(data, size, mode)
     return pygame_surface
 
