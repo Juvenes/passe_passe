@@ -260,7 +260,7 @@ class QRCodeScreen(Screen):
         temp =os.path.basename(photo_path)
         ddd =f"http://51.178.27.230:8080/photo/{temp}"
         print(ddd)
-        self.qr_code = self.generate_qr_code(ddd)
+        self.qr_code = self.generate_qr_code(str(ddd))
     def send_image_to_server(self, image_path):
         url = 'http://51.178.27.230:8080/upload'
         files = {'file': open(image_path, 'rb')}
