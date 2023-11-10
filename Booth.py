@@ -27,9 +27,28 @@ def process_image(pygame_image, logo_path):
 
     # Load logo and add it to the bottom right corner
     logo = cv2.imread(logo_path, cv2.IMREAD_UNCHANGED)
-    y_offset = cv_image.shape[0] - logo.shape[0]
-    x_offset = cv_image.shape[1] - logo.shape[1]
-    sharpened[y_offset:y_offset+logo.shape[0], x_offset:x_offset+logo.shape[1]] = logo
+    logo_height, logo_width = logo.shape[:2]
+
+    # Calculate the overlay position (bottom-right corner)
+    y_offset = sharpened.shape[0] - logo_height
+    x_offset = sharpened.shape[1] - logo_width
+
+    # Split logo into color and alpha channels
+    logo_bgr = logo[:, :, :3]  # Color channels
+    logo_mask = logo[:, :, 3]  # Alpha channel
+
+    # Create an inverse mask of the logo
+    logo_mask_inv = cv2.bitwise_not(logo_mask)
+
+    # Extract the ROI (region of interest) from the main image where the logo will be placed
+    roi = sharpened[y_offset:y_offset+logo_height, x_offset:x_offset+logo_width]
+
+    # Use the masks to create the combined ROI
+    roi_bg = cv2.bitwise_and(roi, roi, mask=logo_mask_inv)
+    roi_fg = cv2.bitwise_and(logo_bgr, logo_bgr, mask=logo_mask)
+
+    # Merge the ROI back into the main image
+    sharpened[y_offset:y_offset+logo_height, x_offset:x_offset+logo_width] = cv2.add(roi_bg, roi_fg)
 
     return sharpened
 
