@@ -174,6 +174,11 @@ class PhotoPreviewScreen(Screen):
                 return PhotoScreen(self.screen)
             elif self.keep_button.collidepoint(event.pos): # Replace with your logo path
                 self.screen.fill((0, 0, 0))
+                font = pygame.font.SysFont(None, 48)
+                message = font.render("Processing image...", True, (255, 255, 255))
+                # Position the text
+                text_rect = message.get_rect(center=(screen_width // 2, screen_height // 2))
+                self.screen.blit(message, text_rect)
                 pygame.display.flip()
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 save_path = f"saved_photos/final_{timestamp}.png"
