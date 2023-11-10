@@ -275,19 +275,19 @@ class QRCodeScreen(Screen):
         )
         qr.add_data(url)
         qr.make(fit=True)
-        qr_img = qr.make_image(fill_color="white", back_color="black")
+        qr_img = qr.make_image(fill_color="black", back_color="white")
         qr_img = qr_img.resize((400, 400))  # Adjust size as needed
         mode = qr_img.mode
         size = qr_img.size
         data = qr_img.tobytes()
         return pygame.image.fromstring(data, size, mode)
     def draw(self):
-        self.screen.fill((0, 0, 0))
-        qr_code_position = (screen_width / 2 - 150, screen_height / 2 - 150)  # Center the QR code
+        self.screen.fill((1, 1, 1))
+        qr_code_position = (screen_width / 2 - 200, screen_height / 2 - 200)  # Center the QR code
         self.screen.blit(self.qr_code, qr_code_position)
 
         # Draw the finish button
-        pygame.draw.rect(self.screen, (255, 255, 255), self.finish_button)  # Draw a white rectangle for the button
+        pygame.draw.rect(self.screen,(255, 0, 0), self.finish_button)  # Draw a white rectangle for the button
         finish_text = self.font.render("Finish", True, (0, 0, 0))  # Black text
         self.screen.blit(finish_text, (self.finish_button.x + 20, self.finish_button.y + 10))
         pygame.display.flip() 
