@@ -258,6 +258,7 @@ class QRCodeScreen(Screen):
         self.send_image_to_server(photo_path)
         # Generate QR Code with the URL from the server
         ddd =f"http://51.178.27.230:8080/photo/{photo_path}"
+        print(photo_path)
         self.qr_code = self.generate_qr_code(ddd)
         # Generate QR Code
 
@@ -282,8 +283,9 @@ class QRCodeScreen(Screen):
         data = qr_img.tobytes()
         return pygame.image.fromstring(data, size, mode)
     def draw(self):
+        self.screen.fill((0, 0, 0))
         qr_code_position = (screen_width / 2 - 150, screen_height / 2 - 150)  # Center the QR code
-        self.screen.blit(self.qr_code, qr_code_position)
+        #self.screen.blit(self.qr_code, qr_code_position)
 
         # Draw the finish button
         pygame.draw.rect(self.screen, (255, 255, 255), self.finish_button)  # Draw a white rectangle for the button
