@@ -26,16 +26,9 @@ def process_image(main_image, logo):
     # Enhance sharpness of the main image
     sharpness_enhancer = ImageEnhance.Sharpness(main_image)
     enhanced_sharpness_image = sharpness_enhancer.enhance(1.2)  # Adjust the factor as needed
-    
     # Since you wanted to use this image in Pygame, you need to convert the data
-    mode = enhanced_sharpness_image.mode
-    size = enhanced_sharpness_image.size
-    data = enhanced_sharpness_image.tobytes()
 
-    # Initialize Pygame and create a surface with the enhanced image
-
-    pygame_surface = pygame.image.fromstring(data, size, mode)
-    return pygame_surface
+    return enhanced_sharpness_image
 
 class Screen:
     def __init__(self, screen):
@@ -151,8 +144,12 @@ class PhotoPreviewScreen(Screen):
         self.retry_button = pygame.Rect(50, screen_height/4, 150, 50)
         self.keep_button = pygame.Rect(50, screen_height/2, 150, 50)
         logo = Image.open("stamp.png")
-        self.photo_py = process_image(self.photo, logo)  # Replace with your logo path
-
+        resized_image = self.photo.resize((640, 640))
+        mode = resized_image.mode
+        size = resized_image.size
+        data = resized_image.tobytes()
+    # Initialize Pygame and create a surface with the enhanced image
+        self.photo_py = pygame.image.fromstring(data, size, mode)
 
     def draw(self):
         # Center the photo on the screen
