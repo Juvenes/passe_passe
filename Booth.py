@@ -277,9 +277,12 @@ class QRCodeScreen(Screen):
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
         qr_img = qr_img.resize((400, 400))  # Adjust size as needed
+
+        # Convert PIL image to a format that Pygame understands
         mode = qr_img.mode
         size = qr_img.size
         data = qr_img.tobytes()
+        # The mode argument needs to match the format of the image data
         return pygame.image.fromstring(data, size, mode)
     def draw(self):
         self.screen.fill((1, 1, 1))
