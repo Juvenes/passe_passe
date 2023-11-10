@@ -16,14 +16,20 @@ def process_image(main_image, logo):
 
     # Paste the logo onto the main image
     main_image.paste(logo, (x, y), logo)
-    enhancer = ImageEnhance.Contrast(main_image)
-    enhanced_image = enhancer.enhance(2.0)  # The factor 2.0 is just an example value
+# Enhance color
+    color_enhancer = ImageEnhance.Color(main_image)
+    enhanced_color_image = color_enhancer.enhance(1.5)  # Adjust the factor as needed
 
+    # Enhance sharpness
+    sharpness_enhancer = ImageEnhance.Sharpness(enhanced_color_image)
+    enhanced_sharpness_image = sharpness_enhancer.enhance(2.0)  # Adjust the factor as needed
+
+    # Save the enhanced image
     # Convert the Pillow image to a format Pygame can use
-    mode = enhanced_image.mode
-    size = enhanced_image.size
-    data = enhanced_image.tobytes()
-
+    mode = enhanced_sharpness_image.mode
+    size = enhanced_sharpness_image.size
+    data = enhanced_sharpness_image.tobytes()
+    enhanced_sharpness_image.save("final.png")
     # Initialize Pygame and create a surface with the enhanced image
     pygame_surface = pygame.image.fromstring(data, size, mode)
     return pygame_surface
@@ -142,14 +148,14 @@ class PhotoPreviewScreen(Screen):
         self.retry_button = pygame.Rect(50, screen_height/4, 150, 50)
         self.keep_button = pygame.Rect(50, screen_height/2, 150, 50)
         logo = Image.open("stamp.png")
-        self.photo = process_image(self.photo, logo)  # Replace with your logo path
+        self.photo_py = process_image(self.photo, logo)  # Replace with your logo path
 
 
     def draw(self):
         # Center the photo on the screen
-        x = (screen_width - self.photo.get_width()) // 2
-        y = (screen_height - self.photo.get_height()) // 2
-        self.screen.blit(self.photo, (x+100, y))
+        x = (screen_width - self.photo_py.get_width()) // 2
+        y = (screen_height - self.photo_py.get_height()) // 2
+        self.screen.blit(self.photo_py, (x+100, y))
         
         # Draw the buttons
         pygame.draw.rect(self.screen, (255, 0, 0), self.retry_button)
@@ -166,11 +172,9 @@ class PhotoPreviewScreen(Screen):
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.retry_button.collidepoint(event.pos):
-                # Return to the PhotoScreen to retake the photo
                 return PhotoScreen(self.screen)
             elif self.keep_button.collidepoint(event.pos): # Replace with your logo path
-                cv2.imwrite("path_to_save_final_image.png", self.photo)  # Replace with your save path
-                print("Photo saved!")
+                self.photo.save("final.png")
                 return StartScreen(self.screen)
         return self
 
@@ -242,7 +246,7 @@ class PhotoScreen(Screen):
         return self.update()
 
 pygame.init()
-os.system("v4l2-ctl --set-ctrl wide_dynamic_range=1 -d /dev/v4l-subdev0")
+
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 
