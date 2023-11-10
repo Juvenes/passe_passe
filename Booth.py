@@ -262,9 +262,10 @@ class QRCodeScreen(Screen):
     def send_image_to_server(self, image_path):
         url = 'http://51.178.27.230:8080/upload'
         files = {'file': open(image_path, 'rb')}
-        r = requests.post(url, files=files)
-        print(r.text)
-        return r.text
+        requests.post(url, files=files)
+        url =f"http://51.178.27.230:8080/photo/{image_path}"
+
+        return url
 
     def generate_qr_code(self, url):
         qr = qrcode.QRCode(
@@ -301,8 +302,6 @@ class QRCodeScreen(Screen):
                 # For example, return to the start screen or close the application
                 return StartScreen(self.screen)  # Assuming StartScreen is your starting screen
         return self  # Return the current screen if no button is pressed
-    def handle_event(self, event):
-        pass      # ... code to handle button press and return to StartScreen ...
 pygame.init()
 
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
