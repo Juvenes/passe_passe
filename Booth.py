@@ -10,7 +10,10 @@ from libcamera import controls ,Transform
 
 def process_image(pygame_image, logo_path):
     # Convert Pygame surface to OpenCV image (RGB to BGR)
-    cv_image = cv2.cvtColor(pygame.surfarray.array3d(pygame_image), cv2.COLOR_RGB2BGR)
+    # Convert Pygame surface to OpenCV image (correcting axes)
+    cv_image = pygame.surfarray.array3d(pygame_image)
+    cv_image = cv_image.transpose([1, 0, 2])  # Correcting the axes
+    cv_image = cv2.cvtColor(cv_image, cv2.COLOR_RGB2BGR)
 
     # Load logo and add it to the bottom right corner
     logo = cv2.imread(logo_path, cv2.IMREAD_UNCHANGED)
@@ -23,17 +26,16 @@ def process_image(pygame_image, logo_path):
     # Overlay the logo on the image
     for y in range(logo_height):
         for x in range(logo_width):
-            if logo[y, x][3] != 0:  # Alpha not zero (not transparent)
-                cv_image[y + y_offset, x + x_offset] = logo[y, x][:3]  # Replace pixel
+            if logo[y, x][3] != 0:  # Check for alpha channel
+                cv_image[y + y_offset, x + x_offset] = logo[y, x][:3]
 
     # Convert from BGR to RGB
     rgb_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
 
-    # Convert back to Pygame surface
-    pygame_image = pygame.image.frombuffer(rgb_image.tostring(), rgb_image.shape[1::-1], 'RGB')
+    # Convert back to Pygame surface (correcting axes back)
+    final_surface = pygame.surfarray.make_surface(rgb_image.transpose([1, 0, 2]))
 
-    return pygame_image
-
+    return final_surface
 os.system("v4l2-ctl --set-ctrl wide_dynamic_range=1 -d /dev/v4l-subdev0")
 class Screen:
     def __init__(self, screen):
