@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 from libcamera import controls ,Transform
 
-def add_logo_to_pygame_image(pygame_image, logo_path):
+def process_image(pygame_image, logo_path):
     # Convert Pygame surface to OpenCV image (RGB to BGR)
     cv_image = cv2.cvtColor(pygame.surfarray.array3d(pygame_image), cv2.COLOR_RGB2BGR)
 
