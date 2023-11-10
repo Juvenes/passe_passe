@@ -1,42 +1,33 @@
 import pygame
 import io
 from picamera2 import Picamera2
-from PIL import Image
+from PIL import Image , ImageEnhance
 import time
 import os
 import numpy as np
 import cv2
 from libcamera import controls ,Transform
 
-def process_image(pygame_image, logo_path):
-    # Convert Pygame surface to OpenCV image (RGB to BGR)
-    # Convert Pygame surface to OpenCV image (correcting axes)
-    cv_image = pygame.surfarray.array3d(pygame_image)
-    cv_image = cv_image.transpose([1, 0, 2])  # Correcting the axes
-    cv_image = cv2.cvtColor(cv_image, cv2.COLOR_RGB2BGR)
+def process_image(main_image, logo):
+    image_width, image_height = main_image.size
+    logo_width, logo_height = logo.size
+    x = image_width - logo_width
+    y = image_height - logo_height
 
-    # Load logo and add it to the bottom right corner
-    logo = cv2.imread(logo_path, cv2.IMREAD_UNCHANGED)
-    logo_height, logo_width = logo.shape[:2]
+    # Paste the logo onto the main image
+    main_image.paste(logo, (x, y), logo)
+    enhancer = ImageEnhance.Contrast(main_image)
+    enhanced_image = enhancer.enhance(2.0)  # The factor 2.0 is just an example value
 
-    # Calculate the overlay position (bottom-right corner)
-    y_offset = cv_image.shape[0] - logo_height
-    x_offset = cv_image.shape[1] - logo_width
+    # Convert the Pillow image to a format Pygame can use
+    mode = enhanced_image.mode
+    size = enhanced_image.size
+    data = enhanced_image.tobytes()
 
-    # Overlay the logo on the image
-    for y in range(logo_height):
-        for x in range(logo_width):
-            if logo[y, x][3] != 0:  # Check for alpha channel
-                cv_image[y + y_offset, x + x_offset] = logo[y, x][:3]
+    # Initialize Pygame and create a surface with the enhanced image
+    pygame_surface = pygame.image.fromstring(data, size, mode)
+    return pygame_surface
 
-    # Convert from BGR to RGB
-    rgb_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
-
-    # Convert back to Pygame surface (correcting axes back)
-    final_surface = pygame.surfarray.make_surface(rgb_image.transpose([1, 0, 2]))
-
-    return final_surface
-os.system("v4l2-ctl --set-ctrl wide_dynamic_range=1 -d /dev/v4l-subdev0")
 class Screen:
     def __init__(self, screen):
         self.screen = screen
@@ -144,13 +135,14 @@ class ChoiceDetailScreen(Screen):
 class PhotoPreviewScreen(Screen):
     def __init__(self, screen, photo_path):
         super().__init__(screen)
-        self.photo = pygame.image.load(photo_path)
+        self.photo = Image.open(photo_path)
         self.font = pygame.font.SysFont(None, 48)
         self.screen.fill((0, 0, 0))
         # Define the buttons
         self.retry_button = pygame.Rect(50, screen_height/4, 150, 50)
         self.keep_button = pygame.Rect(50, screen_height/2, 150, 50)
-        self.photo = process_image(self.photo, "stamp.png")  # Replace with your logo path
+        logo = Image.open("stamp.png")
+        self.photo = process_image(self.photo, logo)  # Replace with your logo path
 
 
     def draw(self):
@@ -177,7 +169,7 @@ class PhotoPreviewScreen(Screen):
                 # Return to the PhotoScreen to retake the photo
                 return PhotoScreen(self.screen)
             elif self.keep_button.collidepoint(event.pos): # Replace with your logo path
-                cv2.imwrite("path_to_save_final_image.png", self.p)  # Replace with your save path
+                cv2.imwrite("path_to_save_final_image.png", self.photo)  # Replace with your save path
                 print("Photo saved!")
                 return StartScreen(self.screen)
         return self
@@ -250,6 +242,7 @@ class PhotoScreen(Screen):
         return self.update()
 
 pygame.init()
+os.system("v4l2-ctl --set-ctrl wide_dynamic_range=1 -d /dev/v4l-subdev0")
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 
