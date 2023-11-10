@@ -56,7 +56,7 @@ class StartScreen(Screen):
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and self.button_rect.collidepoint(event.pos):
-            return ChoiceScreen(self.screen)
+            return PhotoScreen(self.screen)
         return self
 
 class ChoiceScreen(Screen):
