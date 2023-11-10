@@ -251,8 +251,6 @@ screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREE
 current_screen = StartScreen(screen)
 running = True
 while running:
-    print(screen_width)
-    print(screen_height)
     current_screen.draw()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
