@@ -189,7 +189,7 @@ class PhotoScreen(Screen):
         self.font_large = pygame.font.SysFont(None, 200)
         self.font_medium = pygame.font.SysFont(None, 50)
         self.picam2 = Picamera2()
-        self.config = self.picam2.create_video_configuration(main={"size": (1280,720)},transform=Transform(hflip=True))
+        self.config = self.picam2.create_video_configuration(main={"size": (1024,1024)},transform=Transform(hflip=True))
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.picam2.configure(self.config)
         self.picam2.start()
