@@ -250,6 +250,7 @@ class PhotoScreen(Screen):
 class QRCodeScreen(Screen):
     def __init__(self, screen, photo_path):
         super().__init__(screen)
+        self.screen.fill((0, 0, 0))
         self.photo_path = photo_path
         self.font = pygame.font.SysFont(None, 48)
         self.finish_button = pygame.Rect(50, screen_height - 100, 150, 50)
@@ -264,7 +265,6 @@ class QRCodeScreen(Screen):
         files = {'file': open(image_path, 'rb')}
         requests.post(url, files=files)
         url =f"http://51.178.27.230:8080/photo/{image_path}"
-
         return url
 
     def generate_qr_code(self, url):
@@ -284,8 +284,6 @@ class QRCodeScreen(Screen):
         return pygame.image.fromstring(data, size, mode)
     def draw(self):
         # Fill the screen with a background color
-        self.screen.fill((0, 0, 0))
-
         # Draw the QR code
         qr_code_position = (screen_width / 2 - 150, screen_height / 2 - 150)  # Center the QR code
         self.screen.blit(self.qr_code, qr_code_position)
