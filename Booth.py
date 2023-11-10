@@ -144,18 +144,16 @@ class PhotoPreviewScreen(Screen):
         self.retry_button = pygame.Rect(50, screen_height/4, 150, 50)
         self.keep_button = pygame.Rect(50, screen_height/2, 150, 50)
         logo = Image.open("stamp.png")
-        resized_image = self.photo.resize((640, 640))
-        mode = resized_image.mode
-        size = resized_image.size
-        data = resized_image.tobytes()
+        self.photo = process_image(self.photo,logo)
+        mode = self.photo.mode
+        size = self.photo.size
+        data = self.photo.tobytes()
     # Initialize Pygame and create a surface with the enhanced image
         self.photo_py = pygame.image.fromstring(data, size, mode)
 
     def draw(self):
         # Center the photo on the screen
-        x = (screen_width - self.photo_py.get_width()) // 2
-        y = (screen_height - self.photo_py.get_height()) // 2
-        self.screen.blit(self.photo_py, (x+100, y))
+        self.screen.blit(self.photo_py, (0,0))
         
         # Draw the buttons
         pygame.draw.rect(self.screen, (255, 0, 0), self.retry_button)
@@ -186,7 +184,7 @@ class PhotoScreen(Screen):
         self.font_large = pygame.font.SysFont(None, 200)
         self.font_medium = pygame.font.SysFont(None, 50)
         self.picam2 = Picamera2()
-        self.config = self.picam2.create_video_configuration(main={"size": (1024,1024)},transform=Transform(hflip=True))
+        self.config = self.picam2.create_video_configuration(main={"size": (1024,600)},transform=Transform(hflip=True))
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous, "AfSpeed": controls.AfSpeedEnum.Fast})
         self.picam2.configure(self.config)
         self.picam2.start()
