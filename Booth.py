@@ -1,6 +1,7 @@
 import pygame
 import io
 from picamera2 import Picamera2
+import tempfile
 from PIL import Image , ImageEnhance
 import time
 import qrcode
@@ -277,13 +278,18 @@ class QRCodeScreen(Screen):
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
         qr_img = qr_img.resize((400, 400))  # Adjust size as needed
+    # Save the image to a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+            qr_img.save(temp_file)
+            temp_file_name = temp_file.name
 
-        # Convert PIL image to a format that Pygame understands
-        mode = qr_img.mode
-        size = qr_img.size
-        data = qr_img.tobytes()
-        # The mode argument needs to match the format of the image data
-        return pygame.image.fromstring(data, size, mode)
+        # Load the image in Pygame
+        pygame_image = pygame.image.load(temp_file_name)
+
+        # Optionally, delete the temporary file
+        #os.remove(temp_file_name)
+
+        return pygame_image
     def draw(self):
         self.screen.fill((1, 1, 1))
         qr_code_position = (screen_width / 2 - 200, screen_height / 2 - 200)  # Center the QR code
