@@ -8,51 +8,30 @@ import numpy as np
 import cv2
 from libcamera import controls ,Transform
 
-
-def process_image(pygame_image, logo_path):
-    # Convert Pygame surface to OpenCV image
+def add_logo_to_pygame_image(pygame_image, logo_path):
+    # Convert Pygame surface to OpenCV image (RGB to BGR)
     cv_image = cv2.cvtColor(pygame.surfarray.array3d(pygame_image), cv2.COLOR_RGB2BGR)
-
-    # Apply image enhancements here (if any)
-
-    # Adjust brightness and contrast
-    # Note: These values are examples and may need to be adjusted
-    alpha = 1.5  # Contrast control
-    beta = 50    # Brightness control
-    adjusted = cv2.convertScaleAbs(cv_image, alpha=alpha, beta=beta)
-
-    # Sharpen the image
-    kernel = np.array([[0, -1, 0], [-1, 5,-1], [0, -1, 0]])
-    sharpened = cv2.filter2D(adjusted, -1, kernel)
 
     # Load logo and add it to the bottom right corner
     logo = cv2.imread(logo_path, cv2.IMREAD_UNCHANGED)
     logo_height, logo_width = logo.shape[:2]
 
     # Calculate the overlay position (bottom-right corner)
-    y_offset = sharpened.shape[0] - logo_height
-    x_offset = sharpened.shape[1] - logo_width
+    y_offset = cv_image.shape[0] - logo_height
+    x_offset = cv_image.shape[1] - logo_width
 
-    # Split logo into color and alpha channels
-    logo_bgr = logo[:, :, :3]  # Color channels
-    logo_mask = logo[:, :, 3]  # Alpha channel
+    # Overlay the logo on the image
+    for y in range(logo_height):
+        for x in range(logo_width):
+            if logo[y, x][3] != 0:  # Alpha not zero (not transparent)
+                cv_image[y + y_offset, x + x_offset] = logo[y, x][:3]  # Replace pixel
 
-    # Create an inverse mask of the logo
-    logo_mask_inv = cv2.bitwise_not(logo_mask)
+    # Convert from BGR to RGB
+    rgb_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
 
-    # Extract the ROI (region of interest) from the main image where the logo will be placed
-    roi = sharpened[y_offset:y_offset+logo_height, x_offset:x_offset+logo_width]
+    # Convert back to Pygame surface
+    pygame_image = pygame.image.frombuffer(rgb_image.tostring(), rgb_image.shape[1::-1], 'RGB')
 
-    # Use the masks to create the combined ROI
-    roi_bg = cv2.bitwise_and(roi, roi, mask=logo_mask_inv)
-    roi_fg = cv2.bitwise_and(logo_bgr, logo_bgr, mask=logo_mask)
-
-    # Merge the ROI back into the main image
-    sharpened[y_offset:y_offset+logo_height, x_offset:x_offset+logo_width] = cv2.add(roi_bg, roi_fg)
-    rgb_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
-
-    # Convert to Pygame format
-    pygame_image = pygame.surfarray.make_surface(np.swapaxes(rgb_image, 0, 1))
     return pygame_image
 
 os.system("v4l2-ctl --set-ctrl wide_dynamic_range=1 -d /dev/v4l-subdev0")
