@@ -13,16 +13,19 @@ def process_image(main_image, logo):
     main_image = main_image.convert("RGBA")
     # Load the logo image and ensure it is in RGBA mode
     logo = logo.convert("RGBA")
-    
+    image_width, image_height = main_image.size
+    logo_width, logo_height = logo.size
+    x = image_width - logo_width
+    y = image_height - logo_height
+    print(x)
+    print(y)
     # Assuming the logo size is already 50x50 as needed
-    final2 = Image.new("RGBA", main_image.size)
-    final2 = Image.alpha_composite(final2, main_image)
-    final2 = Image.alpha_composite(final2, logo)
+    main_image.paste(logo,(x,y),logo)
     # Paste the logo onto the main image, using logo as the mask for transparency
 
     # Enhance sharpness of the main image
-    sharpness_enhancer = ImageEnhance.Sharpness(final2)
-    enhanced_sharpness_image = sharpness_enhancer.enhance(1.7)  # Adjust the factor as needed
+    sharpness_enhancer = ImageEnhance.Sharpness(main_image)
+    enhanced_sharpness_image = sharpness_enhancer.enhance(1.2)  # Adjust the factor as needed
     
     # Since you wanted to use this image in Pygame, you need to convert the data
     mode = enhanced_sharpness_image.mode
