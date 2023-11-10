@@ -173,6 +173,7 @@ class PhotoPreviewScreen(Screen):
             if self.retry_button.collidepoint(event.pos):
                 return PhotoScreen(self.screen)
             elif self.keep_button.collidepoint(event.pos): # Replace with your logo path
+                self.screen.fill((0, 0, 0))
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 save_path = f"saved_photos/final_{timestamp}.png"
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)
