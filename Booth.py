@@ -3,9 +3,11 @@ import io
 from picamera2 import Picamera2
 from PIL import Image , ImageEnhance
 import time
+import qrcode
 import os
 import numpy as np
-import cv2
+from datetime import datetime
+import requests
 from libcamera import controls ,Transform
 
 def process_image(main_image, logo):
@@ -17,8 +19,6 @@ def process_image(main_image, logo):
     logo_width, logo_height = logo.size
     x = image_width - logo_width
     y = image_height - logo_height
-    print(x)
-    print(y)
     # Assuming the logo size is already 50x50 as needed
     main_image.paste(logo,(x,y),logo)
     # Paste the logo onto the main image, using logo as the mask for transparency
@@ -172,8 +172,11 @@ class PhotoPreviewScreen(Screen):
             if self.retry_button.collidepoint(event.pos):
                 return PhotoScreen(self.screen)
             elif self.keep_button.collidepoint(event.pos): # Replace with your logo path
-                self.photo.save("final.png")
-                return StartScreen(self.screen)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                save_path = f"saved_photos/final_{timestamp}.png"
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                self.photo.save(save_path)
+                return QRCodeScreen(self.screen, save_path)
         return self
 
 
@@ -243,6 +246,63 @@ class PhotoScreen(Screen):
                 self.start_time = time.time()
         return self.update()
 
+
+class QRCodeScreen(Screen):
+    def __init__(self, screen, photo_path):
+        super().__init__(screen)
+        self.photo_path = photo_path
+        self.font = pygame.font.SysFont(None, 48)
+        self.finish_button = pygame.Rect(50, screen_height - 100, 150, 50)
+        # Send image to the server and receive the URL
+        server_response = self.send_image_to_server(photo_path)
+        # Generate QR Code with the URL from the server
+        self.qr_code = self.generate_qr_code(server_response)
+        # Generate QR Code
+
+    def send_image_to_server(self, image_path):
+        url = 'http://51.178.27.230:8080/upload'
+        files = {'file': open(image_path, 'rb')}
+        r = requests.post(url, files=files)
+        print(r.text)
+        return r.text
+
+    def generate_qr_code(self, url):
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="white", back_color="black")
+        qr_img = qr_img.resize((300, 300))  # Adjust size as needed
+        mode = qr_img.mode
+        size = qr_img.size
+        data = qr_img.tobytes()
+        return pygame.image.fromstring(data, size, mode)
+    def draw(self):
+        # Fill the screen with a background color
+        self.screen.fill((0, 0, 0))
+
+        # Draw the QR code
+        qr_code_position = (screen_width / 2 - 150, screen_height / 2 - 150)  # Center the QR code
+        self.screen.blit(self.qr_code, qr_code_position)
+
+        # Draw the finish button
+        pygame.draw.rect(self.screen, (255, 255, 255), self.finish_button)  # Draw a white rectangle for the button
+        finish_text = self.font.render("Finish", True, (0, 0, 0))  # Black text
+        self.screen.blit(finish_text, (self.finish_button.x + 20, self.finish_button.y + 10))
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.finish_button.collidepoint(event.pos):
+                # Handle the finish button click
+                # For example, return to the start screen or close the application
+                return StartScreen(self.screen)  # Assuming StartScreen is your starting screen
+        return self  # Return the current screen if no button is pressed
+    def handle_event(self, event):
+        pass      # ... code to handle button press and return to StartScreen ...
 pygame.init()
 
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
