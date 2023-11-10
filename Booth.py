@@ -4,10 +4,34 @@ from picamera2 import Picamera2
 from PIL import Image
 import time
 import os
+import numpy as np
+import cv2
 from libcamera import controls ,Transform
 
 
+def process_image(pygame_image, logo_path):
+    # Convert Pygame surface to OpenCV image
+    cv_image = cv2.cvtColor(pygame.surfarray.array3d(pygame_image), cv2.COLOR_RGB2BGR)
 
+    # Apply image enhancements here (if any)
+
+    # Adjust brightness and contrast
+    # Note: These values are examples and may need to be adjusted
+    alpha = 1.5  # Contrast control
+    beta = 50    # Brightness control
+    adjusted = cv2.convertScaleAbs(cv_image, alpha=alpha, beta=beta)
+
+    # Sharpen the image
+    kernel = np.array([[0, -1, 0], [-1, 5,-1], [0, -1, 0]])
+    sharpened = cv2.filter2D(adjusted, -1, kernel)
+
+    # Load logo and add it to the bottom right corner
+    logo = cv2.imread(logo_path, cv2.IMREAD_UNCHANGED)
+    y_offset = cv_image.shape[0] - logo.shape[0]
+    x_offset = cv_image.shape[1] - logo.shape[1]
+    sharpened[y_offset:y_offset+logo.shape[0], x_offset:x_offset+logo.shape[1]] = logo
+
+    return sharpened
 
 os.system("v4l2-ctl --set-ctrl wide_dynamic_range=1 -d /dev/v4l-subdev0")
 class Screen:
@@ -42,7 +66,7 @@ class ChoiceScreen(Screen):
     def __init__(self, screen):
         super().__init__(screen)
         self.font = pygame.font.SysFont(None, 56)
-        self.choices = ["Photo", "Boomerang", "Message"]
+        self.choices = ["Photo", "Gif", "Filtre"]
         self.buttons = {choice: self.font.render(choice, True, (255, 255, 255)) for choice in self.choices}
 
         spacing = screen_width // 16
@@ -75,13 +99,13 @@ class ChoiceDetailScreen(Screen):
         # Title and explanatory text for each choice
         self.titles = {
             "Photo": "Take a Photo",
-            "Boomerang": "Create a Boomerang",
-            "Message": "Send a Message"
+            "Gif": "Create a Gif from 2 secondes photos",
+            "Filtre": "Take a Photo with filters"
         }
         self.explanations = {
             "Photo": "This option allows you to take a single photo.",
-            "Boomerang": "This option creates a short looping video.",
-            "Message": "This option lets you send a text message."
+            "Gifs": "This option creates a short looping video.",
+            "Filtre": "This option lets you send a text message."
         }
 
         # Rendered text surfaces
@@ -123,6 +147,8 @@ class PhotoPreviewScreen(Screen):
         # Define the buttons
         self.retry_button = pygame.Rect(50, screen_height/4, 150, 50)
         self.keep_button = pygame.Rect(50, screen_height/2, 150, 50)
+        self.photo = process_image(self.photo, "stamp.png")  # Replace with your logo path
+
 
     def draw(self):
         # Center the photo on the screen
@@ -141,18 +167,16 @@ class PhotoPreviewScreen(Screen):
         self.screen.blit(keep_text, (self.keep_button.x + (self.keep_button.width - keep_text.get_width()) // 2, self.keep_button.y + (self.keep_button.height - keep_text.get_height()) // 2))
         
         pygame.display.flip()
-
+    
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.retry_button.collidepoint(event.pos):
                 # Return to the PhotoScreen to retake the photo
                 return PhotoScreen(self.screen)
-            elif self.keep_button.collidepoint(event.pos):
-                # Transition to the next screen or action after keeping the photo
-                # For now, we'll just print a message
+            elif self.keep_button.collidepoint(event.pos): # Replace with your logo path
+                cv2.imwrite("path_to_save_final_image.png", self.p)  # Replace with your save path
                 print("Photo saved!")
-                # Return to the main screen or any other screen you'd like
-                return StartScreen(self.screen)  # Replace with your main screen or desired screen
+                return StartScreen(self.screen)
         return self
 
 
