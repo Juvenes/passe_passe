@@ -49,8 +49,11 @@ def process_image(pygame_image, logo_path):
 
     # Merge the ROI back into the main image
     sharpened[y_offset:y_offset+logo_height, x_offset:x_offset+logo_width] = cv2.add(roi_bg, roi_fg)
+    rgb_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
 
-    return sharpened
+    # Convert to Pygame format
+    pygame_image = pygame.surfarray.make_surface(np.swapaxes(rgb_image, 0, 1))
+    return pygame_image
 
 os.system("v4l2-ctl --set-ctrl wide_dynamic_range=1 -d /dev/v4l-subdev0")
 class Screen:
