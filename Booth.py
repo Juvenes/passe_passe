@@ -63,7 +63,7 @@ class ChoiceScreen(Screen):
     def __init__(self, screen):
         super().__init__(screen)
         self.font = pygame.font.SysFont(None, 56)
-        self.choices = ["Photo", "Gif", "Filtre"]
+        self.choices = ["Photo"]
         self.buttons = {choice: self.font.render(choice, True, (255, 255, 255)) for choice in self.choices}
 
         spacing = screen_width // 16
