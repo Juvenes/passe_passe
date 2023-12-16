@@ -201,7 +201,10 @@ class PhotoScreen(Screen):
         self.picam2.start()
         self.start_time = None
         self.final = None
-        
+        self.overlay_image = Image.open('/home/roman/Desktop/passe_passe/11097.png')
+        self.overlay_image = self.overlay_image.convert("RGBA")
+        self.mask = self.overlay_image.split()[3]
+
         # Define the "Ready" button properties
         self.ready_button_text = self.font_medium.render("Ready", True, (255, 255, 255))
         self.ready_button_rect = pygame.Rect(screen_width/2 - 100, screen_height - 100, 200, 50)
@@ -215,10 +218,11 @@ class PhotoScreen(Screen):
         # Convert the stream to a Pygame image
         image = Image.open(stream)
         image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
+        image = Image.composite(self.overlay_image, image, self.mask)
         self.final = image
         image_width, image_height = image.get_size()
         x = (screen_width - image_width) // 2
-        self.screen.blit(image, (x, 0))
+        self.screen.blit(image, (0, 0))
         if not self.start_time:
             pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
             self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
