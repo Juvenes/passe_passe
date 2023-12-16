@@ -59,81 +59,6 @@ class StartScreen(Screen):
             return PhotoScreen(self.screen)
         return self
 
-class ChoiceScreen(Screen):
-    def __init__(self, screen):
-        super().__init__(screen)
-        self.font = pygame.font.SysFont(None, 56)
-        self.choices = ["Photo"]
-        self.buttons = {choice: self.font.render(choice, True, (255, 255, 255)) for choice in self.choices}
-
-        spacing = screen_width // 16
-        button_width = screen_width // 4
-        self.button_rects = {
-            choice: text.get_rect(center=((i + 1) * spacing + i * button_width + button_width / 2, screen_height / 2))
-            for i, (choice, text) in enumerate(self.buttons.items())
-        }
-
-    def draw(self):
-        self.screen.fill((0, 0, 0))
-        for choice, text in self.buttons.items():
-            self.screen.blit(text, self.button_rects[choice].topleft)
-        pygame.display.flip()
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for choice, rect in self.button_rects.items():
-                if rect.collidepoint(event.pos):
-                    return ChoiceDetailScreen(self.screen, choice)
-        return self
-
-class ChoiceDetailScreen(Screen):
-    def __init__(self, screen, choice):
-        super().__init__(screen)
-        self.choice = choice
-        self.font_large = pygame.font.SysFont(None, 72)
-        self.font_small = pygame.font.SysFont(None, 48)
-
-        # Title and explanatory text for each choice
-        self.titles = {
-            "Photo": "Take a Photo",
-            "Gif": "Create a Gif from 2 secondes photos",
-            "Filtre": "Take a Photo with filters"
-        }
-        self.explanations = {
-            "Photo": "This option allows you to take a single photo.",
-            "Gifs": "This option creates a short looping video.",
-            "Filtre": "This option lets you send a text message."
-        }
-
-        # Rendered text surfaces
-        self.title_text = self.font_large.render(self.titles[self.choice], True, (255, 255, 255))
-        self.explanation_text = self.font_small.render(self.explanations[self.choice], True, (255, 255, 255))
-        self.go_button_text = self.font_large.render("Go", True, (255, 255, 255))
-        self.go_button_rect = self.go_button_text.get_rect(center=(screen_width/2, 3*screen_height/4))
-        self.circle_radius = int(self.go_button_rect.width * 0.6)  # Adjust as needed
-
-    def draw(self):
-        self.screen.fill((0, 0, 0))
-
-        # Draw borders
-        pygame.draw.circle(self.screen, (255, 255, 255), self.go_button_rect.center, self.circle_radius, 2)
-
-        # Draw text
-        self.screen.blit(self.title_text, (screen_width/2 - self.title_text.get_width()/2, screen_height/8))
-        self.screen.blit(self.explanation_text, (screen_width/2 - self.explanation_text.get_width()/2, screen_height/4))
-        self.screen.blit(self.go_button_text, self.go_button_rect.topleft)
-
-        pygame.display.flip()
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.go_button_rect.collidepoint(event.pos):
-                if self.choice == "Photo":
-                    return PhotoScreen(self.screen)  # Transition to the PhotoScreen when "Photo" is selected
-                # Add similar conditions for other choices if needed
-                print(f"You chose {self.choice}!")
-        return self
-    
 
 class PhotoPreviewScreen(Screen):
     def __init__(self, screen, photo_path):
@@ -172,21 +97,6 @@ class PhotoPreviewScreen(Screen):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.retry_button.collidepoint(event.pos):
                 return PhotoScreen(self.screen)
-            elif self.keep_button.collidepoint(event.pos): # Replace with your logo path
-                self.screen.fill((0, 0, 0))
-                font = pygame.font.SysFont(None, 48)
-                message = font.render("Processing image...", True, (255, 255, 255))
-                # Position the text
-                text_rect = message.get_rect(center=(screen_width // 2, screen_height // 2))
-                self.screen.blit(message, text_rect)
-                pygame.display.flip()
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                save_path = f"saved_photos/final_{timestamp}.png"
-                os.makedirs(os.path.dirname(save_path), exist_ok=True)
-                self.photo.save(save_path)
-                return QRCodeScreen(self.screen, save_path)
-        return self
-
 
 class PhotoScreen(Screen):
     def __init__(self, screen):
@@ -201,50 +111,24 @@ class PhotoScreen(Screen):
         self.picam2.start()
         self.start_time = None
         self.final = None
-        self.overlay_image = Image.open('/home/roman/Desktop/passe_passe/11097.png')
-        self.overlay_image = self.overlay_image.convert("RGBA")
-        self.mask = self.overlay_image.split()[3]
-
+        
         # Define the "Ready" button properties
         self.ready_button_text = self.font_medium.render("Ready", True, (255, 255, 255))
         self.ready_button_rect = pygame.Rect(screen_width/2 - 100, screen_height - 100, 200, 50)
 
     def draw(self):
         self.screen.fill((0, 0, 0))
-    
-        # Capture the image to a BytesIO stream for live preview
+        # Capture the image to a BytesIO stream for live previe
         stream = io.BytesIO()
         self.picam2.capture_file(stream, format='jpeg')
         stream.seek(0)
-        
-        # Convert the stream to a PIL image
-        pil_image = Image.open(stream)
-        
-        # If the overlay image size doesn't match the photo size, resize it
-        if pil_image.size != self.overlay_image.size:
-            self.overlay_image = self.overlay_image.resize(pil_image.size, Image.ANTIALIAS)
-            self.mask = self.overlay_image.split()[3]  # Update the mask as well
-        
-        # Composite the overlay onto the PIL image using the mask
-        pil_image_with_snow = Image.composite(self.overlay_image, pil_image, self.mask)
-        
-        # Convert the composited PIL image back to a Pygame surface
-        mode = pil_image_with_snow.mode
-        size = pil_image_with_snow.size
-        data = pil_image_with_snow.tobytes()
-        pygame_image_with_snow = pygame.image.fromstring(data, size, mode)
-        
-        # Store the final image to save later
-        self.final = pil_image_with_snow
-        
-        # Get the size of the Pygame image and calculate the position to center it
-        image_width, image_height = pygame_image_with_snow.get_size()
-        x = (self.screen.get_width() - image_width) // 2
-        y = (self.screen.get_height() - image_height) // 2
-        
-        # Blit the Pygame image with snow onto the screen at the calculated position
-        self.screen.blit(pygame_image_with_snow, (x, y))
-        
+        # Convert the stream to a Pygame image
+        image = Image.open(stream)
+        image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
+        self.final = image
+        image_width, image_height = image.get_size()
+        x = (screen_width - image_width) // 2
+        self.screen.blit(image, (x, 0))
         if not self.start_time:
             pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
             self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
@@ -281,66 +165,6 @@ class PhotoScreen(Screen):
         return self.update()
 
 
-class QRCodeScreen(Screen):
-    def __init__(self, screen, photo_path):
-        super().__init__(screen)
-        self.screen.fill((0, 0, 0))
-        self.photo_path = photo_path
-        self.font = pygame.font.SysFont(None, 48)
-        self.finish_button = pygame.Rect(50, screen_height - 100, 150, 50)
-        # Send image to the server and receive the URL
-        self.send_image_to_server(photo_path)
-        # Generate QR Code with the URL from the server
-        temp =os.path.basename(photo_path)
-        ddd =f"http://51.178.27.230:8080/photo/{temp}"
-        print(ddd)
-        self.qr_code = self.generate_qr_code(str(ddd))
-    def send_image_to_server(self, image_path):
-        url = 'http://51.178.27.230:8080/upload'
-        files = {'file': open(image_path, 'rb')}
-        requests.post(url, files=files)
-
-    def generate_qr_code(self, url):
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(url)
-        qr.make(fit=True)
-        qr_img = qr.make_image(fill_color="black", back_color="white")
-        qr_img = qr_img.resize((400, 400))  # Adjust size as needed
-    # Save the image to a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-            qr_img.save(temp_file)
-            temp_file_name = temp_file.name
-
-        # Load the image in Pygame
-        pygame_image = pygame.image.load(temp_file_name)
-
-        # Optionally, delete the temporary file
-        #os.remove(temp_file_name)
-
-        return pygame_image
-    def draw(self):
-        self.screen.fill((1, 1, 1))
-        qr_code_position = (screen_width / 2 - 200, screen_height / 2 - 200)  # Center the QR code
-        self.screen.blit(self.qr_code, qr_code_position)
-
-        # Draw the finish button
-        pygame.draw.rect(self.screen,(255, 0, 0), self.finish_button)  # Draw a white rectangle for the button
-        finish_text = self.font.render("Finish", True, (0, 0, 0))  # Black text
-        self.screen.blit(finish_text, (self.finish_button.x + 20, self.finish_button.y + 10))
-        pygame.display.flip() 
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.finish_button.collidepoint(event.pos):
-                # Handle the finish button click
-                # For example, return to the start screen or close the application
-                return StartScreen(self.screen)  # Assuming StartScreen is your starting screen
-        return self  # Return the current screen if no button is pressed
 pygame.init()
 
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
