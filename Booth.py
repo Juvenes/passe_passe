@@ -40,27 +40,98 @@ class Screen:
 
     def handle_event(self, event):
         pass
-
 class StartScreen(Screen):
     def __init__(self, screen):
         super().__init__(screen)
-        print("HAHAHHAHAHHA")
         self.font = pygame.font.SysFont(None, 56)
-        self.text = self.font.render("Take Image", True, (255, 255, 255))
-        self.button_rect = self.text.get_rect(center=(screen_width/2, screen_height/2))
+        self.photo_text = self.font.render("Take Photo", True, (255, 255, 255))
+        self.gif_text = self.font.render("Take GIF", True, (255, 255, 255))
+
+        # Set up buttons for Photo and GIF
+        self.photo_button_rect = self.photo_text.get_rect(center=(screen_width/3, screen_height/2))
+        self.gif_button_rect = self.gif_text.get_rect(center=(2*screen_width/3, screen_height/2))
 
     def draw(self):
         self.screen.fill((0, 0, 0))
-        self.screen.blit(self.text, self.button_rect.topleft)
+        self.screen.blit(self.photo_text, self.photo_button_rect.topleft)
+        self.screen.blit(self.gif_text, self.gif_button_rect.topleft)
         pygame.display.flip()
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and self.button_rect.collidepoint(event.pos):
-            return PhotoScreen(self.screen)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.photo_button_rect.collidepoint(event.pos):
+                return PhotoScreen(self.screen)
+            elif self.gif_button_rect.collidepoint(event.pos):
+                return GifScreen(self.screen)
         return self
 
+class GifScreen(Screen):
+    def __init__(self, screen):
+        super().__init__(screen)
+        self.picam2 = Picamera2()
+        self.config = self.picam2.create_video_configuration(main={"size": (1024, 600)})
+        self.picam2.configure(self.config)
+        self.frames = []
+        self.capturing = False
+        self.font = pygame.font.SysFont(None, 48)
+        self.capture_button = pygame.Rect(screen_width/2 - 100, screen_height - 100, 200, 50)
+        self.capture_button_text = self.font.render("Capture GIF", True, (255, 255, 255))
 
+    def draw(self):
+        self.screen.fill((0, 0, 0))
+        pygame.draw.rect(self.screen, (0, 255, 0), self.capture_button)
+        self.screen.blit(self.capture_button_text, (self.capture_button.x + (self.capture_button.width - self.capture_button_text.get_width()) // 2, self.capture_button.y + (self.capture_button.height - self.capture_button_text.get_height()) // 2))
+        pygame.display.flip()
 
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and self.capture_button.collidepoint(event.pos):
+            self.capturing = True
+            self.capture_frames()
+        return self
+        
+
+    def capture_frames(self):
+        if self.capturing:
+            stream = io.BytesIO()
+            self.picam2.capture_file(stream, format='jpeg')
+            stream.seek(0)
+            image = Image.open(stream)
+            self.frames.append(image)
+            if len(self.frames) >= 10:  # Adjust the number of frames as needed
+                self.capturing = False
+                self.create_gif()
+
+    def create_gif(self):
+        gif_path = f"captured_gifs/gif_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gif"
+        os.makedirs(os.path.dirname(gif_path), exist_ok=True)
+        self.frames[0].save(gif_path, save_all=True, append_images=self.frames[1:], loop=0, duration=100)  # Adjust duration as needed
+        self.screen.fill((0, 0, 0))
+        pygame.display.flip()
+        time.sleep(1)  # Delay to show completion
+        self.preview_gif(gif_path)
+    def preview_gif(self, gif_path):
+        gif = pygame.image.load(gif_path)
+        gif_rect = gif.get_rect(center=(screen_width//2, screen_height//2))
+
+        continue_button = pygame.Rect(screen_width/2 - 100, screen_height - 100, 200, 50)
+        continue_button_text = self.font.render("Continue", True, (255, 255, 255))
+
+        previewing = True
+        while previewing:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                if event.type == pygame.MOUSEBUTTONDOWN and continue_button.collidepoint(event.pos):
+                    previewing = False
+
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(gif, gif_rect)
+            pygame.draw.rect(self.screen, (0, 255, 0), continue_button)
+            self.screen.blit(continue_button_text, (continue_button.x + (continue_button.width - continue_button_text.get_width()) // 2, continue_button.y + (continue_button.height - continue_button_text.get_height()) // 2))
+            pygame.display.flip()
+
+        return StartScreen(self.screen)
 class PhotoPreviewScreen(Screen):
     def __init__(self, screen, photo_path):
         super().__init__(screen)
