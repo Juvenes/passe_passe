@@ -211,18 +211,40 @@ class PhotoScreen(Screen):
 
     def draw(self):
         self.screen.fill((0, 0, 0))
-        # Capture the image to a BytesIO stream for live previe
+    
+        # Capture the image to a BytesIO stream for live preview
         stream = io.BytesIO()
         self.picam2.capture_file(stream, format='jpeg')
         stream.seek(0)
-        # Convert the stream to a Pygame image
-        image = Image.open(stream)
-        image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
-        image = Image.composite(self.overlay_image, image, self.mask)
-        self.final = image
-        image_width, image_height = image.get_size()
-        x = (screen_width - image_width) // 2
-        self.screen.blit(image, (0, 0))
+        
+        # Convert the stream to a PIL image
+        pil_image = Image.open(stream)
+        
+        # If the overlay image size doesn't match the photo size, resize it
+        if pil_image.size != self.overlay_image.size:
+            self.overlay_image = self.overlay_image.resize(pil_image.size, Image.ANTIALIAS)
+            self.mask = self.overlay_image.split()[3]  # Update the mask as well
+        
+        # Composite the overlay onto the PIL image using the mask
+        pil_image_with_snow = Image.composite(self.overlay_image, pil_image, self.mask)
+        
+        # Convert the composited PIL image back to a Pygame surface
+        mode = pil_image_with_snow.mode
+        size = pil_image_with_snow.size
+        data = pil_image_with_snow.tobytes()
+        pygame_image_with_snow = pygame.image.fromstring(data, size, mode)
+        
+        # Store the final image to save later
+        self.final = pil_image_with_snow
+        
+        # Get the size of the Pygame image and calculate the position to center it
+        image_width, image_height = pygame_image_with_snow.get_size()
+        x = (self.screen.get_width() - image_width) // 2
+        y = (self.screen.get_height() - image_height) // 2
+        
+        # Blit the Pygame image with snow onto the screen at the calculated position
+        self.screen.blit(pygame_image_with_snow, (x, y))
+        
         if not self.start_time:
             pygame.draw.rect(self.screen, (0, 128, 0), self.ready_button_rect)
             self.screen.blit(self.ready_button_text, (self.ready_button_rect.x + (self.ready_button_rect.width - self.ready_button_text.get_width()) // 2, self.ready_button_rect.y + (self.ready_button_rect.height - self.ready_button_text.get_height()) // 2))
