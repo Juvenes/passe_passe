@@ -84,7 +84,7 @@ class GifScreen(Screen):
         pygame.display.flip()
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and self.capture_button.collidepoint(event.pos):
+        if self.capture_button.collidepoint(event.pos):
             self.capturing = True
             self.capture_frames()
         return self
