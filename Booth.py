@@ -82,7 +82,6 @@ class PhotoPreviewScreen(Screen):
         self.screen.blit(self.photo_py, (0,0))
         
         # Draw the buttons
-        pygame.draw.rect(self.screen, (255, 0, 0), self.retry_button)
         pygame.draw.rect(self.screen, (0, 255, 0), self.keep_button)
         
         keep_text = self.font.render("Finish", True, (255, 255, 255))
