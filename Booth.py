@@ -60,6 +60,7 @@ class StartScreen(Screen):
         return self
 
 
+
 class PhotoPreviewScreen(Screen):
     def __init__(self, screen, photo_path):
         super().__init__(screen)
@@ -67,8 +68,7 @@ class PhotoPreviewScreen(Screen):
         self.font = pygame.font.SysFont(None, 48)
         self.screen.fill((0, 0, 0))
         # Define the buttons
-        self.retry_button = pygame.Rect(50, screen_height/4, 150, 50)
-        self.keep_button = pygame.Rect(50, screen_height/2, 150, 50)
+        self.keep_button = pygame.Rect(screen_width/2 - 100, screen_height - 100, 200, 50)
         logo = Image.open("stamp.png")
         self.photo = process_image(self.photo,logo)
         mode = self.photo.mode
@@ -85,10 +85,8 @@ class PhotoPreviewScreen(Screen):
         pygame.draw.rect(self.screen, (255, 0, 0), self.retry_button)
         pygame.draw.rect(self.screen, (0, 255, 0), self.keep_button)
         
-        retry_text = self.font.render("Retry", True, (255, 255, 255))
-        keep_text = self.font.render("Keep-it", True, (255, 255, 255))
+        keep_text = self.font.render("Finish", True, (255, 255, 255))
         
-        self.screen.blit(retry_text, (self.retry_button.x + (self.retry_button.width - retry_text.get_width()) // 2, self.retry_button.y + (self.retry_button.height - retry_text.get_height()) // 2))
         self.screen.blit(keep_text, (self.keep_button.x + (self.keep_button.width - keep_text.get_width()) // 2, self.keep_button.y + (self.keep_button.height - keep_text.get_height()) // 2))
         
         pygame.display.flip()
