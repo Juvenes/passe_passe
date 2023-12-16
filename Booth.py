@@ -93,6 +93,10 @@ class PhotoPreviewScreen(Screen):
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.keep_button.collidepoint(event.pos):
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                save_path = f"saved_photos/final_{timestamp}.png"
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                self.photo.save(save_path)
                 return StartScreen(self.screen)
         return self    
             
