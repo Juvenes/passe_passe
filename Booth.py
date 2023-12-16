@@ -93,7 +93,10 @@ class PhotoPreviewScreen(Screen):
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.retry_button.collidepoint(event.pos):
-                return PhotoScreen(self.screen)
+                return StartScreen(self.screen)
+        return self    
+            
+            
 
 class PhotoScreen(Screen):
     def __init__(self, screen):
