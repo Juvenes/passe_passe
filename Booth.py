@@ -69,7 +69,7 @@ class PhotoPreviewScreen(Screen):
         self.screen.fill((0, 0, 0))
         # Define the buttons
         self.keep_button = pygame.Rect(screen_width/2 - 100, screen_height - 100, 200, 50)
-        logo = Image.open("stamp.png")
+        logo = Image.open("stamp1.png")
         self.photo = process_image(self.photo,logo)
         mode = self.photo.mode
         size = self.photo.size
